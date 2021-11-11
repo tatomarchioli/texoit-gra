@@ -1,0 +1,1 @@
+INSERT INTO movies (year, title, studios, producers, winner) SELECT YEAR, TITLE, STUDIOS, PRODUCERS, CASE WHEN WINNER = 'yes' THEN 1 ELSE 0 END FROM CSVREAD('classpath:movielist.csv', null, 'fieldSeparator=;');
