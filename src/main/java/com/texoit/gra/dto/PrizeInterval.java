@@ -10,4 +10,5 @@ public class PrizeInterval {
 	private List<PrizeIntervalItem> min;
 	
 	private List<PrizeIntervalItem> max;
+	
 }

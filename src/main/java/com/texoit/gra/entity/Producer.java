@@ -2,14 +2,13 @@ package com.texoit.gra.entity;
 
 import java.util.List;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 
 import lombok.Data;
 import lombok.NonNull;
@@ -24,12 +23,9 @@ public class Producer {
 	private Long id;
 	
 	@NonNull
+	@Column(unique = true, nullable = false)
 	private String name;
 	
-	@ManyToMany
-	@JoinTable(
-			  name = "producer_has_movies", 
-			  joinColumns = @JoinColumn(name = "producerId"), 
-			  inverseJoinColumns = @JoinColumn(name = "movieId"))
+	@ManyToMany(mappedBy = "producers", fetch = FetchType.LAZY)
 	private List<Movie> movies;
 }
