@@ -11,7 +11,6 @@ import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -31,17 +30,13 @@ public class ProducerControllerIntTest {
 	@MockBean
 	private ProducerRepository repository;
 	
-	@Mock
-	private PrizeIntervalItem i1;
+	private PrizeIntervalItem i1 = new PrizeIntervalItem("p1", 1L, 1995L, 1996L);
 	
-	@Mock
-	private PrizeIntervalItem i2;
+	private PrizeIntervalItem i2 = new PrizeIntervalItem("p2", 2L, 2019L, 2021L);
 	
-	@Mock
-	private PrizeIntervalItem i3;
+	private PrizeIntervalItem i3 = new PrizeIntervalItem("p3", 5L, 2015L, 2020L);
 	
-	@Mock
-	private PrizeIntervalItem i4;
+	private PrizeIntervalItem i4 = new PrizeIntervalItem("p4", 6L, 2015L, 2021L);
 	
 
 	@Test
@@ -68,7 +63,28 @@ public class ProducerControllerIntTest {
 		when(repository.findFastestAndSlowestWinners(2)).thenReturn(Arrays.asList(i1, i2, i3, i4));
 				
 		mvc.perform(get("/producers/fastest-and-slowest-winners"))
-				.andExpect(content().json("{\"min\":[{\"producer\":null,\"interval\":0,\"previousWin\":0,\"followingWin\":0},{\"producer\":null,\"interval\":0,\"previousWin\":0,\"followingWin\":0}],\"max\":[{\"producer\":null,\"interval\":0,\"previousWin\":0,\"followingWin\":0},{\"producer\":null,\"interval\":0,\"previousWin\":0,\"followingWin\":0}]}"));
+				.andExpect(content().json(
+						  "{\"min\": [{"
+						+ "\"producer\":\"p1\","
+						+ "\"interval\":1,"
+						+ "\"previousWin\":1995,"
+						+ "\"followingWin\":1996"
+						+ "},{"
+						+ "\"producer\":\"p2\","
+						+ "\"interval\":2,"
+						+ "\"previousWin\":2019,"
+						+ "\"followingWin\":2021"
+						+ "}],\"max\":[{"
+						+ "\"producer\":\"p4\","
+						+ "\"interval\":6,"
+						+ "\"previousWin\":2015,"
+						+ "\"followingWin\":2021"
+						+ "},{"
+						+ "\"producer\":\"p3\","
+						+ "\"interval\":5,"
+						+ "\"previousWin\":2015,"
+						+ "\"followingWin\":2020"
+						+ "}]}"));
 	}
 	
 	@Test
@@ -77,7 +93,23 @@ public class ProducerControllerIntTest {
 		when(repository.findFastestAndSlowestWinners(2)).thenReturn(Arrays.asList(i1, i2, i3));
 				
 		mvc.perform(get("/producers/fastest-and-slowest-winners"))
-				.andExpect(content().json("{\"min\":[{\"producer\":null,\"interval\":0,\"previousWin\":0,\"followingWin\":0},{\"producer\":null,\"interval\":0,\"previousWin\":0,\"followingWin\":0}],\"max\":[{\"producer\":null,\"interval\":0,\"previousWin\":0,\"followingWin\":0}]}"));
+				.andExpect(content().json(
+						  "{\"min\": [{"
+						+ "\"producer\":\"p1\","
+						+ "\"interval\":1,"
+						+ "\"previousWin\":1995,"
+						+ "\"followingWin\":1996"
+						+ "},{"
+						+ "\"producer\":\"p2\","
+						+ "\"interval\":2,"
+						+ "\"previousWin\":2019,"
+						+ "\"followingWin\":2021"
+						+ "}],\"max\":[{"
+						+ "\"producer\":\"p3\","
+						+ "\"interval\":5,"
+						+ "\"previousWin\":2015,"
+						+ "\"followingWin\":2020"
+						+ "}]}"));
 	}
 	
 }

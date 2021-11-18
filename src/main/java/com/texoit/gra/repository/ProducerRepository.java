@@ -13,13 +13,13 @@ public interface ProducerRepository extends CrudRepository<Producer, Long>{
 
 	@Query(nativeQuery = true, 
 			value = 
-			"WITH data as ( " +
+			"WITH data AS ( " +
 			" WITH scan_plan AS( " +
 			"  SELECT " +
 			"  p.name AS \"producer\", " +
-			"  COALESCE(LAG(m.year) OVER(PARTITION BY p.id  ORDER BY p.id), 0) as \"previousWin\", " +
+			"  COALESCE(LAG(m.year) OVER(PARTITION BY p.id ORDER BY p.id ASC, m.year ASC), 0) AS \"previousWin\", " +
 			"  m.year AS \"followingWin\", " +
-			"  m.year - COALESCE(LAG(m.year) OVER(PARTITION BY p.id  ORDER BY p.id), m.year) as \"interval\" " +
+			"  m.year - COALESCE(LAG(m.year) OVER(PARTITION BY p.id ORDER BY p.id ASC, m.year ASC), m.year) AS \"interval\" " +
 			"  FROM PRODUCERS p " +
 			"  INNER JOIN PRODUCER_HAS_MOVIES h ON h.producer_id = p.id " +
 			"  INNER JOIN MOVIES m  ON m.id = h.movie_id  AND m.winner = 1 " +
@@ -30,7 +30,7 @@ public interface ProducerRepository extends CrudRepository<Producer, Long>{
 			" ROW_NUMBER() OVER (ORDER BY \"interval\" DESC) AS last_row " +
 			" FROM scan_plan " +
 			" WHERE \"interval\" > 0 " +
-			" ORDER BY \"interval\" ASC, \"previousWin\" ASC" +
+			" ORDER BY \"interval\" ASC, \"previousWin\" ASC, \"producer\" ASC" +
 			") " +
 			"SELECT \"producer\", \"previousWin\", \"followingWin\", \"interval\" " +
 			"FROM data " +

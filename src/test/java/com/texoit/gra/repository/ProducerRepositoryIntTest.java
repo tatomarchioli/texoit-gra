@@ -19,7 +19,6 @@ import com.texoit.gra.projection.PrizeIntervalProjection;
 
 @ExtendWith(SpringExtension.class)
 @DataJpaTest
-//@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class ProducerRepositoryIntTest {
 	
 	@Autowired
@@ -160,7 +159,7 @@ public class ProducerRepositoryIntTest {
 		List<PrizeIntervalProjection> items = producerRepository.findFastestAndSlowestWinners(2);		
 		
 		//Assert the the list is now different
-		assertThat(items).hasSize(2);
+		assertThat(items).hasSize(3);
 		
 		assertThat(items.get(0))
 			.hasFieldOrPropertyWithValue("producer", "p1")
@@ -174,8 +173,71 @@ public class ProducerRepositoryIntTest {
 			.hasFieldOrPropertyWithValue("previousWin", 2020L)
 			.hasFieldOrPropertyWithValue("followingWin", 2021L);
 		
+		assertThat(items.get(2))
+			.hasFieldOrPropertyWithValue("producer", "p1")
+			.hasFieldOrPropertyWithValue("interval", 4L)
+			.hasFieldOrPropertyWithValue("previousWin", 2016L)
+			.hasFieldOrPropertyWithValue("followingWin", 2020L);
+		
 	}
 	
+	@Test
+	public void findFastestAndSlowestWinnersSmallerLimitTest() {
+		
+		//Given a movie that did win the prize
+		Movie m = new Movie();
+		m.setTitle("indicated movie");
+		m.setStudios("test");
+		m.setYear(2016L);
+		m.setWinner(true);
+		m.setProducers(Collections.singletonList(p1));
+		movieRepository.save(m);
+		
+		List<PrizeIntervalProjection> items = producerRepository.findFastestAndSlowestWinners(1);		
+		
+		//Assert the the list is now different
+		assertThat(items).hasSize(2);
+		
+		assertThat(items.get(0))
+			.hasFieldOrPropertyWithValue("producer", "p1")
+			.hasFieldOrPropertyWithValue("interval", 1L)
+			.hasFieldOrPropertyWithValue("previousWin", 2015L)
+			.hasFieldOrPropertyWithValue("followingWin", 2016L);
+		
+		assertThat(items.get(1))
+			.hasFieldOrPropertyWithValue("producer", "p1")
+			.hasFieldOrPropertyWithValue("interval", 4L)
+			.hasFieldOrPropertyWithValue("previousWin", 2016L)
+			.hasFieldOrPropertyWithValue("followingWin", 2020L);
+		
+	}
+	
+
+	@Test
+	public void findFastestAndSlowestWinnersWithNotEnoughMoviesTes() {
+		
+		//Given that there are only two movies available, one for each producer
+		movieRepository.deleteAllById(Arrays.asList(m1.getId(), m3.getId()));
+				
+		List<PrizeIntervalProjection> items = producerRepository.findFastestAndSlowestWinners(1);		
+		
+		//Assert the the list is now empty
+		assertThat(items).hasSize(0);
+		
+	}
+	
+	@Test
+	public void findFastestAndSlowestWinnersWithNoMoviesTest() {
+		
+		//Given that there are only no movies available
+		movieRepository.deleteAll();
+				
+		List<PrizeIntervalProjection> items = producerRepository.findFastestAndSlowestWinners(1);		
+		
+		//Assert the the list is now empty
+		assertThat(items).hasSize(0);
+		
+	}
 	
 
 }
