@@ -6,13 +6,13 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>2.5.6</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/> 
 	</parent>
 	<groupId>com.texoit</groupId>
 	<artifactId>gra</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>gra</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Golden Raspberry Award</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>

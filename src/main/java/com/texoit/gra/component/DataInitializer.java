@@ -85,7 +85,7 @@ public class DataInitializer implements InitializingBean{
 	}
 
 	private List<String[]> readCsv() throws FileNotFoundException, IOException {
-		try (BufferedReader br = new BufferedReader(new FileReader(ResourceUtils.getFile("classpath:movielist-test.csv")))) {
+		try (BufferedReader br = new BufferedReader(new FileReader(ResourceUtils.getFile("classpath:movielist.csv")))) {
 			return br.lines().map(l -> l.split(";")).skip(1).collect(Collectors.toList());
 		}
 	}
