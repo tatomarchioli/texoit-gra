@@ -4,10 +4,9 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.query.Param;
 
 import com.texoit.gra.entity.Producer;
-import com.texoit.gra.projection.PrizeIntervalProjection;
+import com.texoit.gra.projection.AwardIntervalProjection;
 
 public interface ProducerRepository extends CrudRepository<Producer, Long>{
 
@@ -26,14 +25,15 @@ public interface ProducerRepository extends CrudRepository<Producer, Long>{
 			"  ORDER BY p.id asc, m.year ASC " +
 			" ) " +
 			" SELECT *, " +
-			" ROW_NUMBER() OVER (ORDER BY \"interval\" ASC) AS first_row, " +
-			" ROW_NUMBER() OVER (ORDER BY \"interval\" DESC) AS last_row " +
+			" RANK() OVER (ORDER BY \"interval\" ASC) AS \"min\", " +
+			" RANK() OVER (ORDER BY \"interval\" DESC) AS \"max\" " +
 			" FROM scan_plan " +
 			" WHERE \"interval\" > 0 " +
 			" ORDER BY \"interval\" ASC, \"previousWin\" ASC, \"producer\" ASC" +
 			") " +
-			"SELECT \"producer\", \"previousWin\", \"followingWin\", \"interval\" " +
+			"SELECT \"producer\", \"previousWin\", \"followingWin\", \"interval\", " +
+			"case when \"min\" = 1 then 'MIN' else 'MAX' end as \"resultSet\"" +
 			"FROM data " +
-			"WHERE (first_row <= :limit OR last_row <= :limit)")
-	List<PrizeIntervalProjection> findFastestAndSlowestWinners(@Param("limit") Integer limit);
+			"WHERE (\"min\" = 1 OR \"max\" = 1)")
+	List<AwardIntervalProjection> findWinnersByInterval();
 }
