@@ -15,7 +15,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.texoit.gra.entity.Movie;
 import com.texoit.gra.entity.Producer;
-import com.texoit.gra.projection.PrizeIntervalProjection;
+import com.texoit.gra.enums.AwardIntervalProjectionResultSet;
+import com.texoit.gra.projection.AwardIntervalProjection;
 
 @ExtendWith(SpringExtension.class)
 @DataJpaTest
@@ -76,9 +77,9 @@ public class ProducerRepositoryIntTest {
 	
 	
 	@Test
-	public void findFastestAndSlowestWinnersTest() {
+	public void finWinnersByIntervalTest() {
 		
-		List<PrizeIntervalProjection> items = producerRepository.findFastestAndSlowestWinners(2);		
+		List<AwardIntervalProjection> items = producerRepository.findWinnersByInterval();		
 				
 		assertThat(items).hasSize(2);
 		
@@ -86,22 +87,24 @@ public class ProducerRepositoryIntTest {
 			.hasFieldOrPropertyWithValue("producer", "p2")
 			.hasFieldOrPropertyWithValue("interval", 1L)
 			.hasFieldOrPropertyWithValue("previousWin", 2020L)
-			.hasFieldOrPropertyWithValue("followingWin", 2021L);
+			.hasFieldOrPropertyWithValue("followingWin", 2021L)
+			.hasFieldOrPropertyWithValue("resultSet", AwardIntervalProjectionResultSet.MIN);
 		
 		assertThat(items.get(1))
 			.hasFieldOrPropertyWithValue("producer", "p1")
 			.hasFieldOrPropertyWithValue("interval", 5L)
 			.hasFieldOrPropertyWithValue("previousWin", 2015L)
-			.hasFieldOrPropertyWithValue("followingWin", 2020L);
+			.hasFieldOrPropertyWithValue("followingWin", 2020L)
+			.hasFieldOrPropertyWithValue("resultSet", AwardIntervalProjectionResultSet.MAX);
 		
 	}
 	
 	@Test
-	public void findFastestAndSlowestWinnersWithOnlyOneProducerTest() {
+	public void finWinnersByIntervalWithOnlyOneProducerTest() {
 		
 		movieRepository.deleteAllById(Arrays.asList(m1.getId(), m2.getId()));
 		
-		List<PrizeIntervalProjection> items = producerRepository.findFastestAndSlowestWinners(2);		
+		List<AwardIntervalProjection> items = producerRepository.findWinnersByInterval();		
 				
 		assertThat(items).hasSize(1);
 		
@@ -109,12 +112,13 @@ public class ProducerRepositoryIntTest {
 			.hasFieldOrPropertyWithValue("producer", "p2")
 			.hasFieldOrPropertyWithValue("interval", 1L)
 			.hasFieldOrPropertyWithValue("previousWin", 2020L)
-			.hasFieldOrPropertyWithValue("followingWin", 2021L);
+			.hasFieldOrPropertyWithValue("followingWin", 2021L)
+			.hasFieldOrPropertyWithValue("resultSet", AwardIntervalProjectionResultSet.MIN);;
 				
 	}
 	
 	@Test
-	public void findFastestAndSlowestWinnersIsIgnoringMoviesThatLostTest() {
+	public void finWinnersByIntervalIsIgnoringMoviesThatLostTest() {
 		
 		//Given a movie that did not win the prize
 		Movie m = new Movie();
@@ -124,7 +128,7 @@ public class ProducerRepositoryIntTest {
 		m.setProducers(Collections.singletonList(p1));
 		movieRepository.save(m);
 		
-		List<PrizeIntervalProjection> items = producerRepository.findFastestAndSlowestWinners(2);		
+		List<AwardIntervalProjection> items = producerRepository.findWinnersByInterval();		
 		
 		//Assert the the list is unchanged
 		assertThat(movieRepository.findAll()).hasSize(5);
@@ -134,20 +138,22 @@ public class ProducerRepositoryIntTest {
 			.hasFieldOrPropertyWithValue("producer", "p2")
 			.hasFieldOrPropertyWithValue("interval", 1L)
 			.hasFieldOrPropertyWithValue("previousWin", 2020L)
-			.hasFieldOrPropertyWithValue("followingWin", 2021L);
+			.hasFieldOrPropertyWithValue("followingWin", 2021L)
+			.hasFieldOrPropertyWithValue("resultSet", AwardIntervalProjectionResultSet.MIN);
 		
 		assertThat(items.get(1))
 			.hasFieldOrPropertyWithValue("producer", "p1")
 			.hasFieldOrPropertyWithValue("interval", 5L)
 			.hasFieldOrPropertyWithValue("previousWin", 2015L)
-			.hasFieldOrPropertyWithValue("followingWin", 2020L);
+			.hasFieldOrPropertyWithValue("followingWin", 2020L)
+			.hasFieldOrPropertyWithValue("resultSet", AwardIntervalProjectionResultSet.MAX);
 		
 	}
 	
 	@Test
-	public void findFastestAndSlowestWinnersIsConsideringMoviesThatWonTest() {
+	public void finWinnersByIntervalIsConsideringMoviesThatWonTest() {
 		
-		//Given a movie that did win the prize
+		//Given a movie that did win the prize, thus adding an interval for producer 1 of 1 year
 		Movie m = new Movie();
 		m.setTitle("indicated movie");
 		m.setStudios("test");
@@ -156,70 +162,75 @@ public class ProducerRepositoryIntTest {
 		m.setProducers(Collections.singletonList(p1));
 		movieRepository.save(m);
 		
-		List<PrizeIntervalProjection> items = producerRepository.findFastestAndSlowestWinners(2);		
+		List<AwardIntervalProjection> items = producerRepository.findWinnersByInterval();		
 		
-		//Assert the the list is now different
+		//Assert the the list is now different, since there`s an new 1 year interval to be shown in the min list
 		assertThat(items).hasSize(3);
 		
 		assertThat(items.get(0))
 			.hasFieldOrPropertyWithValue("producer", "p1")
 			.hasFieldOrPropertyWithValue("interval", 1L)
 			.hasFieldOrPropertyWithValue("previousWin", 2015L)
-			.hasFieldOrPropertyWithValue("followingWin", 2016L);
+			.hasFieldOrPropertyWithValue("followingWin", 2016L)
+			.hasFieldOrPropertyWithValue("resultSet", AwardIntervalProjectionResultSet.MIN);
 		
 		assertThat(items.get(1))
 			.hasFieldOrPropertyWithValue("producer", "p2")
 			.hasFieldOrPropertyWithValue("interval", 1L)
 			.hasFieldOrPropertyWithValue("previousWin", 2020L)
-			.hasFieldOrPropertyWithValue("followingWin", 2021L);
+			.hasFieldOrPropertyWithValue("followingWin", 2021L)
+			.hasFieldOrPropertyWithValue("resultSet", AwardIntervalProjectionResultSet.MIN);
 		
 		assertThat(items.get(2))
 			.hasFieldOrPropertyWithValue("producer", "p1")
 			.hasFieldOrPropertyWithValue("interval", 4L)
 			.hasFieldOrPropertyWithValue("previousWin", 2016L)
-			.hasFieldOrPropertyWithValue("followingWin", 2020L);
+			.hasFieldOrPropertyWithValue("followingWin", 2020L)
+			.hasFieldOrPropertyWithValue("resultSet", AwardIntervalProjectionResultSet.MAX);
 		
 	}
 	
+	
 	@Test
-	public void findFastestAndSlowestWinnersSmallerLimitTest() {
+	public void finWinnersByIntervalWithIntermediateIntervalsTest() {
 		
-		//Given a movie that did win the prize
+		//Given a movie that did win the prize, thus creating an interval of two years (2013 to 2015)
 		Movie m = new Movie();
-		m.setTitle("indicated movie");
-		m.setStudios("test");
-		m.setYear(2016L);
+		m.setTitle("new m");
+		m.setYear(2013L);
 		m.setWinner(true);
 		m.setProducers(Collections.singletonList(p1));
 		movieRepository.save(m);
 		
-		List<PrizeIntervalProjection> items = producerRepository.findFastestAndSlowestWinners(1);		
+		List<AwardIntervalProjection> items = producerRepository.findWinnersByInterval();		
 		
-		//Assert the the list is now different
+		//Assert the the list is unchanged, since the smallest interval is still 1 year, and the biggest is still 5 years
+		assertThat(movieRepository.findAll()).hasSize(5);
 		assertThat(items).hasSize(2);
 		
 		assertThat(items.get(0))
-			.hasFieldOrPropertyWithValue("producer", "p1")
+			.hasFieldOrPropertyWithValue("producer", "p2")
 			.hasFieldOrPropertyWithValue("interval", 1L)
-			.hasFieldOrPropertyWithValue("previousWin", 2015L)
-			.hasFieldOrPropertyWithValue("followingWin", 2016L);
+			.hasFieldOrPropertyWithValue("previousWin", 2020L)
+			.hasFieldOrPropertyWithValue("followingWin", 2021L)
+			.hasFieldOrPropertyWithValue("resultSet", AwardIntervalProjectionResultSet.MIN);
 		
 		assertThat(items.get(1))
 			.hasFieldOrPropertyWithValue("producer", "p1")
-			.hasFieldOrPropertyWithValue("interval", 4L)
-			.hasFieldOrPropertyWithValue("previousWin", 2016L)
-			.hasFieldOrPropertyWithValue("followingWin", 2020L);
+			.hasFieldOrPropertyWithValue("interval", 5L)
+			.hasFieldOrPropertyWithValue("previousWin", 2015L)
+			.hasFieldOrPropertyWithValue("followingWin", 2020L)
+			.hasFieldOrPropertyWithValue("resultSet", AwardIntervalProjectionResultSet.MAX);
 		
 	}
-	
 
 	@Test
-	public void findFastestAndSlowestWinnersWithNotEnoughMoviesTes() {
+	public void finWinnersByIntervalWithNotEnoughMoviesTes() {
 		
 		//Given that there are only two movies available, one for each producer
 		movieRepository.deleteAllById(Arrays.asList(m1.getId(), m3.getId()));
 				
-		List<PrizeIntervalProjection> items = producerRepository.findFastestAndSlowestWinners(1);		
+		List<AwardIntervalProjection> items = producerRepository.findWinnersByInterval();		
 		
 		//Assert the the list is now empty
 		assertThat(items).hasSize(0);
@@ -227,12 +238,12 @@ public class ProducerRepositoryIntTest {
 	}
 	
 	@Test
-	public void findFastestAndSlowestWinnersWithNoMoviesTest() {
+	public void finWinnersByIntervalWithNoMoviesTest() {
 		
 		//Given that there are only no movies available
 		movieRepository.deleteAll();
 				
-		List<PrizeIntervalProjection> items = producerRepository.findFastestAndSlowestWinners(1);		
+		List<AwardIntervalProjection> items = producerRepository.findWinnersByInterval();		
 		
 		//Assert the the list is now empty
 		assertThat(items).hasSize(0);
